@@ -1,10 +1,12 @@
 package com.example.memorygameapp
 
+import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygameapp.models.BoardSize
@@ -54,6 +56,8 @@ class MainActivity : AppCompatActivity() {
         tvNumMoves = findViewById(R.id.tvNumMoves)
         tvNumPairs = findViewById(R.id.tvNumPairs)
 
+        tvNumPairs.setTextColor(ContextCompat.getColor(this, R.color.color_progress_none))
+
         //Dynamically set the width and height
         //In the recycler view
         //Every recycler view
@@ -90,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         }
         if (memoryGame.isCardFaceUp(position)){
             //alert the user of an invalid move
-            Snackbar.make(clRoot, "Invalid Move", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(clRoot, "Invalid Move", Snackbar.LENGTH_SHORT).show()
             return
         }
         //Updating the memory game, with the attempted flip
@@ -99,7 +103,22 @@ class MainActivity : AppCompatActivity() {
         //Actually flip over the card
         if(memoryGame.flipCard(position)){
             Log.i(TAG, "Found a match! Num pairs found: ${memoryGame.numPairsFound}")
+            //add in, color interpolation in the number of pairs
+            //increment the number of pairs, update the color
+
+            val color = ArgbEvaluator().evaluate(
+                memoryGame.numPairsFound.toFloat() / boardSize.getNumPairs(),
+                ContextCompat.getColor(this, R.color.color_progress_none),
+                ContextCompat.getColor(this, R.color.color_progress_full),
+            ) as Int
+            tvNumPairs.setTextColor(color)
+            tvNumPairs.text = "Pairs: ${memoryGame.numPairsFound} / ${boardSize.getNumPairs()}"
+            if (memoryGame.haveWonGame()) {
+                Snackbar.make(clRoot, "You won! Congratulations", Snackbar.LENGTH_LONG).show()
+            }
+
         }
+        tvNumMoves.text = "Moves: ${memoryGame.getNumMoves()}"
         adapter.notifyDataSetChanged()
     }
 }
