@@ -1,15 +1,14 @@
 package com.example.memorygameapp
 
 import android.content.Context
-import android.media.Image
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.ImageView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.memorygameapp.models.BoardSize
 import kotlin.math.min
 
 
@@ -22,7 +21,11 @@ import kotlin.math.min
 
 //abstract class
 //several methods for it to function
-class MemoryBoardAdapter(private val context: Context, private val numPieces: Int) :
+class MemoryBoardAdapter(
+    private val context: Context,
+    private val boardSize: BoardSize,
+    private val cardImages: List<Int>
+) :
     RecyclerView.Adapter<MemoryBoardAdapter.ViewHolder>() {
 
     //singelton which we define constants
@@ -34,8 +37,8 @@ class MemoryBoardAdapter(private val context: Context, private val numPieces: In
 
     //create one view
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val cardWidth = parent.width / 2 - (2* MARGIN_SIZE) //margin size
-        val cardHeight = parent.height / 4 - (2* MARGIN_SIZE) //margin size
+        val cardWidth = parent.width / boardSize.getWidth() - (2* MARGIN_SIZE) //margin size
+        val cardHeight = parent.height / boardSize.getHeight() - (2* MARGIN_SIZE) //margin size
         //each memory card is going to be square
         val cardSideLength = min(cardWidth,cardHeight)
         val view = LayoutInflater.from(context).inflate(R.layout.memory_card, parent, false)
@@ -54,7 +57,7 @@ class MemoryBoardAdapter(private val context: Context, private val numPieces: In
     }
 
     //how many elements in the recycler view
-    override fun getItemCount() = numPieces
+    override fun getItemCount() = boardSize.numCards
 
 
 
@@ -64,6 +67,7 @@ class MemoryBoardAdapter(private val context: Context, private val numPieces: In
 
 
         fun bind(position: Int) {
+            imageButton.setImageResource(cardImages[position])
             imageButton.setOnClickListener {
                 Log.i(TAG, "Clicked on position $position")
             }
