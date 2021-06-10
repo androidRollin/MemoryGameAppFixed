@@ -20,6 +20,8 @@ import com.example.memorygameapp.models.utils.requestPermission
 
 class CreateActivity : AppCompatActivity() {
 
+    //I made some changes
+    //I made some changes
     companion object {
         private const val TAG = "CreateActivity"
         private const val PICK_PHOTO_CODE = 655
