@@ -22,6 +22,7 @@ class CreateActivity : AppCompatActivity() {
 
     //I made some changes
     //I made some changes
+    //I know now whats happening
     companion object {
         private const val TAG = "CreateActivity"
         private const val PICK_PHOTO_CODE = 655
