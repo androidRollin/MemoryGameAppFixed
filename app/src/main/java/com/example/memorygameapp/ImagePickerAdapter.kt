@@ -21,7 +21,7 @@ class ImagePickerAdapter(
         fun onPlaceholderClicked()
     }
 
-
+    //Made some changes in here
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         private val ivCustomImage = itemView.findViewById<ImageView>(R.id.ivCustomImage)
