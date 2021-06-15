@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var memoryGame: MemoryGame
     private lateinit var adapter: MemoryBoardAdapter
-    private var boardSize: BoardSize = BoardSize.EASY
+    private var boardSize: BoardSize = BoardSize.MEDIUM
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         tvNumPairs = findViewById(R.id.tvNumPairs)
 
         val intent = Intent(this, CreateActivity::class.java)
-        intent.putExtra(EXTRA_BOARD_SIZE, BoardSize.EASY)
+        intent.putExtra(EXTRA_BOARD_SIZE, boardSize)
         startActivity(intent)
 
         tvNumPairs.setTextColor(ContextCompat.getColor(this, R.color.color_progress_none))
