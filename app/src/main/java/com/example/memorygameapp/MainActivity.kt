@@ -12,19 +12,19 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygameapp.models.BoardSize
-import com.example.memorygameapp.models.MemoryCard
 import com.example.memorygameapp.models.MemoryGame
-import com.example.memorygameapp.models.utils.DEFAULT_ICONS
+import com.example.memorygameapp.models.UserImageList
 import com.example.memorygameapp.models.utils.EXTRA_BOARD_SIZE
+import com.example.memorygameapp.models.utils.EXTRA_GAME_NAME
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 //Android Studio
 //Vector Icons
@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rvBoard: RecyclerView
     private lateinit var tvNumMoves: TextView
     private lateinit var tvNumPairs: TextView
+
+    private val db = Firebase.firestore
+    private var gameName: String? = null
+    private var customGameImages: List<String>? = null
 
     private lateinit var memoryGame: MemoryGame
     private lateinit var adapter: MemoryBoardAdapter
@@ -121,6 +125,42 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == CREATE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val customGameName = data?.getStringExtra(EXTRA_GAME_NAME)
+            if (customGameName == null){
+                Log.e(TAG, "Got null custom game from CreateActivity")
+                return
+            }
+            downloadGame(customGameName)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+
+    }
+
+    private fun downloadGame(customGameName: String) {
+        //Retrieve the game
+        db.collection("games").document(customGameName).get().addOnSuccessListener { document ->
+            val userImageList = document.toObject(UserImageList::class.java)
+            if(userImageList?.images == null){
+                Log.e(TAG, "Invalid custom game data from Firestore")
+                Snackbar.make(clRoot, "Sorry, we couldn't find any such game, $gameName'", Snackbar.LENGTH_LONG).show()
+                return@addOnSuccessListener
+            }
+            val numCards = userImageList.images.size * 2
+            boardSize = BoardSize.getByValue(numCards)
+            customGameImages = userImageList.images
+            //call this method, have the information in the list of url
+            setupBoard()
+            gameName = customGameName
+
+        }.addOnFailureListener { exception ->
+            Log.e(TAG, "Exception when retrieving game", exception)
+        }
+
+    }
+
+
     private fun showCreationDialog() {
         val boardSizeView =  LayoutInflater.from(this).inflate(R.layout.dialog_board_size, null)
         val radioGroupSize = boardSizeView.findViewById<RadioGroup>(R.id.radioGroup)
@@ -135,8 +175,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, CreateActivity::class.java)
             intent.putExtra(EXTRA_BOARD_SIZE, desiredBoardSize)
             startActivityForResult(intent, CREATE_REQUEST_CODE)
-
-
+            //Capture the result of the creation activity
         })
     }
 
@@ -160,6 +199,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.rbMedium -> BoardSize.MEDIUM
                 else-> BoardSize.HARD
             }
+            gameName = null
+            customGameImages = null
             setupBoard()
         })
     }
@@ -175,7 +216,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    //custome iamges list
     private fun setupBoard() {
+        supportActionBar?.title = gameName ?: getString(R.string.app_name)
         when(boardSize) {
             BoardSize.EASY ->{
                 tvNumMoves.text = "Easy: 4x2"
@@ -192,7 +235,8 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-        memoryGame = MemoryGame(boardSize)
+        tvNumPairs.setTextColor(ContextCompat.getColor(this, R.color.color_progress_none))
+        memoryGame = MemoryGame(boardSize, customGameImages)
         adapter = MemoryBoardAdapter(this, boardSize, memoryGame.cards, object: MemoryBoardAdapter.CardClickListener{
             override fun onCardClicked(position: Int) {
                 updateGameWithFlip(position)
