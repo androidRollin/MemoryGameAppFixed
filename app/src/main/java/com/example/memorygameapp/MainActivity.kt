@@ -3,6 +3,7 @@ package com.example.memorygameapp
 import android.animation.ArgbEvaluator
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +25,7 @@ import com.example.memorygameapp.models.MemoryGame
 import com.example.memorygameapp.models.UserImageList
 import com.example.memorygameapp.models.utils.EXTRA_BOARD_SIZE
 import com.example.memorygameapp.models.utils.EXTRA_GAME_NAME
+import com.github.jinatonic.confetti.CommonConfetti
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -45,6 +47,9 @@ import com.squareup.picasso.Picasso
 //Create classes to manage memory game
 //will have an associated state
 //face-up or face-down
+
+//Properly address that
+//Do the lazy thing
 
 class MainActivity : AppCompatActivity() {
 
@@ -297,6 +302,7 @@ class MainActivity : AppCompatActivity() {
             tvNumPairs.text = "Pairs: ${memoryGame.numPairsFound} / ${boardSize.getNumPairs()}"
             if (memoryGame.haveWonGame()) {
                 Snackbar.make(clRoot, "You won! Congratulations", Snackbar.LENGTH_LONG).show()
+                CommonConfetti.rainingConfetti(clRoot, intArrayOf(Color.YELLOW, Color.GREEN, Color.MAGENTA)).oneShot()
             }
 
         }
